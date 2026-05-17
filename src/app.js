@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import authRoutes from '#routes/auth.routes.js';
+import securityMiddleware from './middleware/security.middleware.js';
 
 const app = express();
 
@@ -19,9 +21,31 @@ app.use(
   })
 );
 
+app.use(securityMiddleware);
+
 app.get('/', (req, res) => {
   logger.info('Received request for home page');
   res.status(200).send('Hello World!');
 });
+
+app.get('/health', (req, res) => {
+  logger.info('Received request for health check');
+  res
+    .status(200)
+    .json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+    });
+});
+
+app.get('/api', (req, res) => {
+  logger.info('Received request for API root');
+  res
+    .status(200)
+    .json({ message: 'Welcome to the Acquisitions API', version: '1.0.0' });
+});
+
+app.use('/api/auth', authRoutes);
 
 export default app;
